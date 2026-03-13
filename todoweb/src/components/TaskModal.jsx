@@ -9,6 +9,10 @@ const DEFAULT_FORM = {
   specific_date: '',
   metric_type: 'boolean',
   is_active: true,
+  // 기간 설정
+  use_date_range: false,
+  start_date: '',
+  end_date: '',
 };
 
 export default function TaskModal({ task, onClose, onSave }) {
@@ -25,6 +29,9 @@ export default function TaskModal({ task, onClose, onSave }) {
         specific_date: task.specific_date || '',
         metric_type: task.metric_type || 'boolean',
         is_active: task.is_active ?? true,
+        use_date_range: !!(task.start_date || task.end_date),
+        start_date: task.start_date || '',
+        end_date: task.end_date || '',
       });
     }
   }, [task]);
@@ -43,7 +50,12 @@ export default function TaskModal({ task, onClose, onSave }) {
     if (!form.title.trim()) return;
     setLoading(true);
     try {
-      await onSave(form);
+      const payload = {
+        ...form,
+        start_date: form.use_date_range ? form.start_date || null : null,
+        end_date: form.use_date_range ? form.end_date || null : null,
+      };
+      await onSave(payload);
       onClose();
     } finally {
       setLoading(false);
@@ -52,7 +64,7 @@ export default function TaskModal({ task, onClose, onSave }) {
 
   return (
     <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal">
+      <div className="modal" style={{ maxHeight: '90vh', overflowY: 'auto' }}>
         <div className="modal-header">
           <h3>{task?.id ? '할 일 수정' : '새 할 일 추가'}</h3>
           <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
@@ -146,6 +158,49 @@ export default function TaskModal({ task, onClose, onSave }) {
               />
             </div>
           )}
+
+          {/* ── 기간 설정 ── */}
+          <div className="form-group">
+            <label className="form-label">유효 기간</label>
+            <div className="chip-group" style={{ marginBottom: '10px' }}>
+              <button
+                className={`chip${!form.use_date_range ? ' selected' : ''}`}
+                onClick={() => { set('use_date_range', false); set('start_date', ''); set('end_date', ''); }}
+              >
+                전체 기간
+              </button>
+              <button
+                className={`chip${form.use_date_range ? ' selected' : ''}`}
+                onClick={() => set('use_date_range', true)}
+              >
+                기간 지정
+              </button>
+            </div>
+
+            {form.use_date_range && (
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">시작일</label>
+                  <input
+                    type="date"
+                    className="form-input"
+                    value={form.start_date}
+                    onChange={(e) => set('start_date', e.target.value)}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">종료일</label>
+                  <input
+                    type="date"
+                    className="form-input"
+                    value={form.end_date}
+                    min={form.start_date}
+                    onChange={(e) => set('end_date', e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* 측정 방식 */}
           <div className="form-group">

@@ -1,4 +1,4 @@
-import { format, getDay, getDate } from 'date-fns';
+import { format, getDay, getDate, parseISO, isWithinInterval, startOfDay } from 'date-fns';
 
 /**
  * 주어진 날짜에 해야 할 task인지 판별
@@ -6,7 +6,18 @@ import { format, getDay, getDate } from 'date-fns';
 export function isTaskDueOnDate(task, date = new Date()) {
   if (!task.is_active) return false;
 
-  const d = typeof date === 'string' ? new Date(date) : date;
+  const d = typeof date === 'string' ? parseISO(date) : date;
+  const dayStart = startOfDay(d);
+
+  // 기간 제한 체크 (start_date ~ end_date)
+  if (task.start_date) {
+    const start = startOfDay(parseISO(task.start_date));
+    if (dayStart < start) return false;
+  }
+  if (task.end_date) {
+    const end = startOfDay(parseISO(task.end_date));
+    if (dayStart > end) return false;
+  }
 
   switch (task.frequency) {
     case 'daily':

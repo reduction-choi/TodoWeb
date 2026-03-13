@@ -8,10 +8,11 @@ import api from '../lib/api';
 import { useToast } from '../components/Toast';
 
 const PRESETS = [
-  { label: '최근 7일', value: '7d' },
+  { label: '최근 7일',  value: '7d' },
   { label: '최근 30일', value: '30d' },
   { label: '최근 3개월', value: '3m' },
-  { label: '전체', value: 'all' },
+  { label: '전체',      value: 'all' },
+  { label: '기간 지정', value: 'custom' },
 ];
 
 function getDateRange(preset) {
@@ -19,7 +20,7 @@ function getDateRange(preset) {
   if (preset === '7d')  return { from: format(subDays(today, 6), 'yyyy-MM-dd'), to: format(today, 'yyyy-MM-dd') };
   if (preset === '30d') return { from: format(subDays(today, 29), 'yyyy-MM-dd'), to: format(today, 'yyyy-MM-dd') };
   if (preset === '3m')  return { from: format(subMonths(today, 3), 'yyyy-MM-dd'), to: format(today, 'yyyy-MM-dd') };
-  return { from: null, to: null };
+  return { from: null, to: null }; // 'all' or 'custom'
 }
 
 const COLORS = ['#7c6af7', '#4ade80', '#fbbf24', '#f87171', '#60a5fa', '#e879f9'];
@@ -29,6 +30,8 @@ export default function StatsPage() {
   const [tasks, setTasks] = useState([]);
   const [selectedTaskIds, setSelectedTaskIds] = useState(new Set());
   const [preset, setPreset] = useState('30d');
+  const [customFrom, setCustomFrom] = useState('');
+  const [customTo, setCustomTo] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [loading, setLoading] = useState(true);
   const { error } = useToast();
 
@@ -40,13 +43,23 @@ export default function StatsPage() {
   };
 
   const fetchStats = useCallback(async () => {
+    // 커스텀 기간인데 날짜가 없으면 요청 안함
+    if (preset === 'custom' && !customFrom) return;
+
     setLoading(true);
     try {
-      const { from, to } = getDateRange(preset);
+      let from, to;
+      if (preset === 'custom') {
+        from = customFrom;
+        to = customTo;
+      } else {
+        ({ from, to } = getDateRange(preset));
+      }
+
       const params = {};
       if (from) params.from = from;
       if (to)   params.to = to;
-      if (selectedTaskIds.size > 0) params.task_id = [...selectedTaskIds][0]; // API는 단일 task_id
+      if (selectedTaskIds.size > 0) params.task_id = [...selectedTaskIds][0];
 
       const res = await api.get('/api/stats', { params });
       setStats(res.data);
@@ -55,7 +68,7 @@ export default function StatsPage() {
     } finally {
       setLoading(false);
     }
-  }, [preset, selectedTaskIds]);
+  }, [preset, customFrom, customTo, selectedTaskIds]);
 
   useEffect(() => { fetchTasks(); }, []);
   useEffect(() => { fetchStats(); }, [fetchStats]);
@@ -68,7 +81,6 @@ export default function StatsPage() {
     });
   };
 
-  // 트렌드 데이터: 날짜 × task 행렬로 변환
   const trendData = (() => {
     if (!stats?.trend?.length) return [];
     const dateMap = {};
@@ -90,6 +102,7 @@ export default function StatsPage() {
 
       {/* 필터 */}
       <div className="card" style={{ marginBottom: '24px' }}>
+        {/* 기간 프리셋 */}
         <div style={{ marginBottom: '16px' }}>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-3)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>기간</p>
           <div className="chip-group">
@@ -105,6 +118,34 @@ export default function StatsPage() {
           </div>
         </div>
 
+        {/* 커스텀 날짜 선택 */}
+        {preset === 'custom' && (
+          <div className="form-row" style={{ marginBottom: '16px' }}>
+            <div className="form-group">
+              <label className="form-label">시작일</label>
+              <input
+                type="date"
+                className="form-input"
+                value={customFrom}
+                max={customTo}
+                onChange={(e) => setCustomFrom(e.target.value)}
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">종료일</label>
+              <input
+                type="date"
+                className="form-input"
+                value={customTo}
+                min={customFrom}
+                max={format(new Date(), 'yyyy-MM-dd')}
+                onChange={(e) => setCustomTo(e.target.value)}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* 할 일 필터 */}
         {tasks.length > 0 && (
           <div>
             <p style={{ fontSize: '0.8rem', color: 'var(--text-3)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
@@ -125,9 +166,15 @@ export default function StatsPage() {
         )}
       </div>
 
-      {loading ? (
+      {/* 커스텀인데 시작일 미설정 */}
+      {preset === 'custom' && !customFrom ? (
+        <div className="empty-state">
+          <div className="empty-icon">◎</div>
+          <p>시작일을 선택하면 통계를 볼 수 있어요.</p>
+        </div>
+      ) : loading ? (
         <div className="empty-state"><p>불러오는 중...</p></div>
-      ) : !stats || (stats.summary?.length === 0) ? (
+      ) : !stats || stats.summary?.length === 0 ? (
         <div className="empty-state">
           <div className="empty-icon">◎</div>
           <p>선택한 기간에 기록된 데이터가 없어요.</p>
@@ -192,7 +239,7 @@ export default function StatsPage() {
               <BarChart data={stats.summary}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                 <XAxis dataKey="title" tick={{ fill: 'var(--text-3)', fontSize: 11 }} />
-                <YAxis tick={{ fill: 'var(--text-3)', fontSize: 11 }} unit="%" />
+                <YAxis domain={[0, 100]} tick={{ fill: 'var(--text-3)', fontSize: 11 }} unit="%" />
                 <Tooltip
                   contentStyle={{ background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: '8px' }}
                 />
