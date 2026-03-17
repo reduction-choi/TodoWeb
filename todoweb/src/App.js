@@ -33,7 +33,7 @@ export default function App() {
         {/* basename은 GitHub Pages 레포명과 동일하게 설정하세요 */}
         {/* 예: github.com/홍길동/todoweb → basename="/todoweb" */}
         {/* 로컬 개발 시에는 basename="/" 또는 제거해도 됩니다 */}
-        <BrowserRouter>
+        <BrowserRouter basename="/TodoWeb">
           <Routes>
             <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
             <Route path="/record" element={<PrivateLayout><RecordPage /></PrivateLayout>} />
