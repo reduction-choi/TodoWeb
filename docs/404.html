@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <script>
+      var path = window.location.pathname;
+      var search = window.location.search;
+      var redirect = window.location.origin + '/TodoWeb/?p=' + encodeURIComponent(path.replace('/TodoWeb', '') + search);
+      window.location.replace(redirect);
+    </script>
+  </head>
+  <body></body>
+</html>
