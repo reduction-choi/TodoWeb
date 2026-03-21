@@ -82,14 +82,29 @@ export default function StatsPage() {
   };
 
   const trendData = (() => {
-    if (!stats?.trend?.length) return [];
-    const dateMap = {};
-    stats.trend.forEach(({ date, task_id, title, avg_value }) => {
-      if (!dateMap[date]) dateMap[date] = { date };
-      dateMap[date][title] = avg_value;
+  if (!stats?.trend?.length) return [];
+  const dateMap = {};
+  stats.trend.forEach(({ date, title, avg_value }) => {
+    if (!dateMap[date]) dateMap[date] = { date };
+    dateMap[date][title] = avg_value;
+  });
+
+  // 빈 날짜를 0으로 채움
+  const allDates = Object.keys(dateMap).sort();
+  const firstDate = new Date(allDates[0]);
+  const lastDate = new Date(allDates[allDates.length - 1]);
+  const taskTitleList = [...new Set(stats.trend.map((t) => t.title))];
+
+  for (let d = new Date(firstDate); d <= lastDate; d.setDate(d.getDate() + 1)) {
+    const key = format(d, 'yyyy-MM-dd');
+    if (!dateMap[key]) dateMap[key] = { date: key };
+    taskTitleList.forEach((title) => {
+      if (dateMap[key][title] === undefined) dateMap[key][title] = 0;
     });
-    return Object.values(dateMap).sort((a, b) => a.date.localeCompare(b.date));
-  })();
+  }
+
+  return Object.values(dateMap).sort((a, b) => a.date.localeCompare(b.date));
+})();
 
   const taskTitles = [...new Set(stats?.trend?.map((t) => t.title) || [])];
 
@@ -224,7 +239,6 @@ export default function StatsPage() {
                       stroke={COLORS[i % COLORS.length]}
                       strokeWidth={2}
                       dot={false}
-                      connectNulls
                     />
                   ))}
                 </LineChart>
