@@ -8,18 +8,18 @@ import api from '../lib/api';
 import { useToast } from '../components/Toast';
 
 const PRESETS = [
-  { label: '최근 7일',  value: '7d' },
+  { label: '최근 7일', value: '7d' },
   { label: '최근 30일', value: '30d' },
   { label: '최근 3개월', value: '3m' },
-  { label: '전체',      value: 'all' },
+  { label: '전체', value: 'all' },
   { label: '기간 지정', value: 'custom' },
 ];
 
 function getDateRange(preset) {
   const today = new Date();
-  if (preset === '7d')  return { from: format(subDays(today, 6), 'yyyy-MM-dd'), to: format(today, 'yyyy-MM-dd') };
+  if (preset === '7d') return { from: format(subDays(today, 6), 'yyyy-MM-dd'), to: format(today, 'yyyy-MM-dd') };
   if (preset === '30d') return { from: format(subDays(today, 29), 'yyyy-MM-dd'), to: format(today, 'yyyy-MM-dd') };
-  if (preset === '3m')  return { from: format(subMonths(today, 3), 'yyyy-MM-dd'), to: format(today, 'yyyy-MM-dd') };
+  if (preset === '3m') return { from: format(subMonths(today, 3), 'yyyy-MM-dd'), to: format(today, 'yyyy-MM-dd') };
   return { from: null, to: null }; // 'all' or 'custom'
 }
 
@@ -39,7 +39,7 @@ export default function StatsPage() {
     try {
       const res = await api.get('/api/tasks');
       setTasks(res.data.filter((t) => t.is_active));
-    } catch {}
+    } catch { }
   };
 
   const fetchStats = useCallback(async () => {
@@ -56,10 +56,10 @@ export default function StatsPage() {
         ({ from, to } = getDateRange(preset));
       }
 
-      const params = {};
-      if (from) params.from = from;
-      if (to)   params.to = to;
-      if (selectedTaskIds.size > 0) params.task_id = [...selectedTaskIds][0];
+      const params = new URLSearchParams();
+      if (from) params.append('from', from);
+      if (to) params.append('to', to);
+      selectedTaskIds.forEach((id) => params.append('task_id', id));
 
       const res = await api.get('/api/stats', { params });
       setStats(res.data);
@@ -82,29 +82,29 @@ export default function StatsPage() {
   };
 
   const trendData = (() => {
-  if (!stats?.trend?.length) return [];
-  const dateMap = {};
-  stats.trend.forEach(({ date, title, avg_value }) => {
-    if (!dateMap[date]) dateMap[date] = { date };
-    dateMap[date][title] = avg_value;
-  });
-
-  // 빈 날짜를 0으로 채움
-  const allDates = Object.keys(dateMap).sort();
-  const firstDate = new Date(allDates[0]);
-  const lastDate = new Date(allDates[allDates.length - 1]);
-  const taskTitleList = [...new Set(stats.trend.map((t) => t.title))];
-
-  for (let d = new Date(firstDate); d <= lastDate; d.setDate(d.getDate() + 1)) {
-    const key = format(d, 'yyyy-MM-dd');
-    if (!dateMap[key]) dateMap[key] = { date: key };
-    taskTitleList.forEach((title) => {
-      if (dateMap[key][title] === undefined) dateMap[key][title] = 0;
+    if (!stats?.trend?.length) return [];
+    const dateMap = {};
+    stats.trend.forEach(({ date, title, avg_value }) => {
+      if (!dateMap[date]) dateMap[date] = { date };
+      dateMap[date][title] = avg_value;
     });
-  }
 
-  return Object.values(dateMap).sort((a, b) => a.date.localeCompare(b.date));
-})();
+    // 빈 날짜를 0으로 채움
+    const allDates = Object.keys(dateMap).sort();
+    const firstDate = new Date(allDates[0]);
+    const lastDate = new Date(allDates[allDates.length - 1]);
+    const taskTitleList = [...new Set(stats.trend.map((t) => t.title))];
+
+    for (let d = new Date(firstDate); d <= lastDate; d.setDate(d.getDate() + 1)) {
+      const key = format(d, 'yyyy-MM-dd');
+      if (!dateMap[key]) dateMap[key] = { date: key };
+      taskTitleList.forEach((title) => {
+        if (dateMap[key][title] === undefined) dateMap[key][title] = 0;
+      });
+    }
+
+    return Object.values(dateMap).sort((a, b) => a.date.localeCompare(b.date));
+  })();
 
   const taskTitles = [...new Set(stats?.trend?.map((t) => t.title) || [])];
 
