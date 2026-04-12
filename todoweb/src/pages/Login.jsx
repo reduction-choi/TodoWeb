@@ -24,7 +24,7 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/register';
+      const endpoint = mode === 'login' ? '/api/todo/auth/login' : '/api/todo/auth/register';
       const payload = mode === 'login'
         ? { email: form.email, password: form.password }
         : { username: form.username, email: form.email, password: form.password };

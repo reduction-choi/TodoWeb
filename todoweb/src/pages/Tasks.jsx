@@ -30,7 +30,7 @@ export default function TasksPage() {
 
   const fetchTasks = async () => {
     try {
-      const res = await api.get('/api/tasks');
+      const res = await api.get('/api/todo/tasks');
       setTasks(res.data);
     } catch {
       error('할 일 목록을 불러오지 못했습니다.');
@@ -44,11 +44,11 @@ export default function TasksPage() {
   const handleSave = async (form) => {
     try {
       if (editingTask?.id) {
-        const res = await api.put(`/api/tasks/${editingTask.id}`, form);
+        const res = await api.put(`/api/todo/tasks/${editingTask.id}`, form);
         setTasks((prev) => prev.map((t) => t.id === editingTask.id ? res.data : t));
         success('수정되었습니다.');
       } else {
-        const res = await api.post('/api/tasks', form);
+        const res = await api.post('/api/todo/tasks', form);
         setTasks((prev) => [...prev, res.data]);
         success('할 일이 추가되었습니다.');
       }
@@ -61,7 +61,7 @@ export default function TasksPage() {
 
   const handleDelete = async (id) => {
     try {
-      await api.delete(`/api/tasks/${id}`);
+      await api.delete(`/api/todo/tasks/${id}`);
       setTasks((prev) => prev.filter((t) => t.id !== id));
       success('삭제되었습니다.');
     } catch {

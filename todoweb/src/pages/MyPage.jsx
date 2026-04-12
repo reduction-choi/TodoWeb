@@ -22,7 +22,7 @@ export default function MyPage() {
     if (usernameForm.username === user.username) return error('현재와 동일한 사용자명입니다.');
     setLoadingUsername(true);
     try {
-      const res = await api.put('/api/auth/profile', { username: usernameForm.username });
+      const res = await api.put('/api/todo/auth/profile', { username: usernameForm.username });
       updateUser({ ...user, username: res.data.username });
       success('사용자명이 변경되었습니다.');
     } catch (err) {
@@ -38,7 +38,7 @@ export default function MyPage() {
     if (pwForm.newPassword.length < 6) return error('새 비밀번호는 최소 6자여야 합니다.');
     setLoadingPw(true);
     try {
-      await api.put('/api/auth/profile', {
+      await api.put('/api/todo/auth/profile', {
         currentPassword: pwForm.currentPassword,
         newPassword: pwForm.newPassword,
       });
@@ -55,7 +55,7 @@ export default function MyPage() {
     if (!deleteForm.password) return error('비밀번호를 입력하세요.');
     setLoadingDelete(true);
     try {
-      await api.delete('/api/auth/profile', { data: { password: deleteForm.password } });
+      await api.delete('/api/todo/auth/profile', { data: { password: deleteForm.password } });
       logout();
       navigate('/login');
       success('회원 탈퇴가 완료되었습니다.');

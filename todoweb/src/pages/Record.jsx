@@ -68,8 +68,8 @@ export default function RecordPage() {
   const fetchData = useCallback(async () => {
     try {
       const [tasksRes, logsRes] = await Promise.all([
-        api.get('/api/tasks'),
-        api.get('/api/logs', { params: { date } }),
+        api.get('/api/todo/tasks'),
+        api.get('/api/todo/logs', { params: { date } }),
       ]);
 
       const allTasks = tasksRes.data;
@@ -95,7 +95,7 @@ export default function RecordPage() {
 
     setSaving((s) => ({ ...s, [taskId]: true }));
     try {
-      const res = await api.post('/api/logs', {
+      const res = await api.post('/api/todo/logs', {
         task_id: taskId,
         log_date: date,
         value: finalValue,

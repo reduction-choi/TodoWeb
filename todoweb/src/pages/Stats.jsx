@@ -37,7 +37,7 @@ export default function StatsPage() {
 
   const fetchTasks = async () => {
     try {
-      const res = await api.get('/api/tasks');
+      const res = await api.get('/api/todo/tasks');
       setTasks(res.data.filter((t) => t.is_active));
     } catch { }
   };
@@ -61,7 +61,7 @@ export default function StatsPage() {
       if (to) params.append('to', to);
       selectedTaskIds.forEach((id) => params.append('task_id', id));
 
-      const res = await api.get('/api/stats', { params });
+      const res = await api.get('/api/todo/stats', { params });
       setStats(res.data);
     } catch {
       error('통계를 불러오지 못했습니다.');
