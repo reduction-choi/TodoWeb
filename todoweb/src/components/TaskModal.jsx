@@ -13,6 +13,7 @@ const DEFAULT_FORM = {
   use_date_range: false,
   start_date: '',
   end_date: '',
+  is_optional: false,
 };
 
 export default function TaskModal({ task, onClose, onSave }) {
@@ -32,6 +33,7 @@ export default function TaskModal({ task, onClose, onSave }) {
         use_date_range: !!(task.start_date || task.end_date),
         start_date: task.start_date || '',
         end_date: task.end_date || '',
+        is_optional: task.is_optional ?? false,
       });
     }
   }, [task]);
@@ -219,6 +221,30 @@ export default function TaskModal({ task, onClose, onSave }) {
                 % (성취도)
               </button>
             </div>
+          </div>
+          
+          {/* 선택사항 여부 */}
+          <div className="form-group">
+            <label className="form-label">선택사항</label>
+            <div className="chip-group">
+              <button
+                className={`chip${!form.is_optional ? ' selected' : ''}`}
+                onClick={() => set('is_optional', false)}
+              >
+                필수
+              </button>
+              <button
+                className={`chip${form.is_optional ? ' selected' : ''}`}
+                onClick={() => set('is_optional', true)}
+              >
+                선택사항
+              </button>
+            </div>
+            {form.is_optional && (
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginTop: '6px' }}>
+                선택사항 항목은 오늘의 달성률에 반영되지 않아요.
+              </p>
+            )}
           </div>
 
           {/* 활성 여부 (수정 시만) */}

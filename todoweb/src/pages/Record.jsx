@@ -107,14 +107,15 @@ export default function RecordPage() {
       setSaving((s) => ({ ...s, [taskId]: false }));
     }
   };
-
-  const completedCount = tasks.filter((t) => {
+  const requiredTasks = tasks.filter((t) => !t.is_optional);
+  const completedCount = requiredTasks.filter((t) => {
     const log = logs[t.id];
     return log && log.value > 0;
   }).length;
 
-  const overallProgress = tasks.length > 0 ? Math.round((completedCount / tasks.length) * 100) : 0;
-
+  const overallProgress = requiredTasks.length > 0
+    ? Math.round((completedCount / requiredTasks.length) * 100)
+    : 0;
   return (
     <div className="main-content">
       <div className="page-header">
@@ -151,7 +152,12 @@ export default function RecordPage() {
             <div className="progress-fill" style={{ width: `${overallProgress}%` }} />
           </div>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-3)', marginTop: '8px' }}>
-            {completedCount} / {tasks.length} 완료
+            {completedCount} / {requiredTasks.length} 완료
+            {tasks.length > requiredTasks.length && (
+              <span style={{ color: 'var(--text-3)', marginLeft: '8px' }}>
+                (선택사항 {tasks.length - requiredTasks.length}개 별도)
+              </span>
+            )}
           </p>
         </div>
       )}

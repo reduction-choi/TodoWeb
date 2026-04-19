@@ -108,6 +108,24 @@ export default function StatsPage() {
 
   const taskTitles = [...new Set(stats?.trend?.map((t) => t.title) || [])];
 
+  // trendData 기반으로 막대그래프용 summary 재계산 (빈 날짜 = 0 포함)
+  const computedSummary = taskTitles.map((title, i) => {
+    const values = trendData.map((d) => Number(d[title] ?? 0));  // ← Number() 추가
+    const total = values.length;
+    const sum = values.reduce((acc, v) => acc + v, 0);
+    const avg = total > 0 ? Math.round((sum / total) * 10) / 10 : 0;
+    const successCount = values.filter((v) => v > 0).length;
+    // stats.summary에서 task_id, total_logs 등 나머지 정보는 유지
+    const original = stats?.summary?.find((s) => s.title === title) || {};
+    return {
+      ...original,
+      title,
+      avg_value: avg,
+      success_count: successCount,
+      total_days: total,
+    };
+  });
+
   return (
     <div className="main-content">
       <div className="page-header">
@@ -250,7 +268,7 @@ export default function StatsPage() {
           <div className="card">
             <h3 style={{ fontSize: '0.95rem', marginBottom: '20px' }}>항목별 요약</h3>
             <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={stats.summary}>
+              <BarChart data={computedSummary}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                 <XAxis dataKey="title" tick={{ fill: 'var(--text-3)', fontSize: 11 }} />
                 <YAxis domain={[0, 100]} tick={{ fill: 'var(--text-3)', fontSize: 11 }} unit="%" />
@@ -262,7 +280,7 @@ export default function StatsPage() {
             </ResponsiveContainer>
 
             <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {stats.summary.map((s, i) => (
+              {computedSummary.map((s, i) => (
                 <div key={s.task_id} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div style={{ width: '10px', height: '10px', borderRadius: '2px', background: COLORS[i % COLORS.length], flexShrink: 0 }} />
                   <span style={{ flex: 1, fontSize: '0.875rem' }}>{s.title}</span>

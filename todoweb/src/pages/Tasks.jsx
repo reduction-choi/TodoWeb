@@ -168,6 +168,9 @@ function TaskRow({ task, onEdit, onDelete, dimmed }) {
           {task.description && (
             <p style={{ fontSize: '0.8rem', color: 'var(--text-3)', marginTop: '2px' }}>{task.description}</p>
           )}
+          {task.is_optional && (
+            <span className="badge badge-gray">선택사항</span>
+          )}
         </div>
         <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
           <button className="btn btn-ghost btn-icon btn-sm" onClick={() => onEdit(task)} title="수정">✎</button>
