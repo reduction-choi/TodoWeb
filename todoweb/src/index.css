@@ -434,3 +434,15 @@ input, textarea, select { font-family: inherit; }
     display: none;
   }
 }
+
+.sidebar-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: var(--text-2);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 4px 8px;
+}

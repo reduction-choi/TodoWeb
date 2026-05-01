@@ -25,7 +25,6 @@ export default function Sidebar({ isOpen, onClose }) {
         <div
           onClick={onClose}
           style={{
-            display: 'none',
             position: 'fixed', inset: 0,
             background: 'rgba(0,0,0,0.5)',
             zIndex: 98,
@@ -34,7 +33,7 @@ export default function Sidebar({ isOpen, onClose }) {
         />
       )}
 
-      <aside className="sidebar" style={{
+      <aside className={`sidebar${isOpen ? ' open' : ''}`} style={{
         // 모바일에서 isOpen 상태에 따라 슬라이드
       }}>
         {/* 모바일 닫기 버튼 */}
@@ -56,6 +55,7 @@ export default function Sidebar({ isOpen, onClose }) {
             <NavLink
               key={to}
               to={to}
+              onClick={onClose}
               className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
             >
               <span className="nav-icon">{icon}</span>
