@@ -8,13 +8,24 @@ import TasksPage from './pages/Tasks';
 import StatsPage from './pages/Stats';
 import MyPage from './pages/MyPage';
 import './index.css';
+import { useState } from 'react';
 
 function PrivateLayout({ children }) {
   const { user } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   if (!user) return <Navigate to="/login" replace />;
   return (
     <div className="app-shell">
-      <Sidebar />
+      {/* 햄버거 버튼 - 모바일에서만 표시 */}
+      <button
+        className="hamburger-btn"
+        onClick={() => setSidebarOpen(true)}
+      >
+        ☰
+      </button>
+
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       {children}
     </div>
   );

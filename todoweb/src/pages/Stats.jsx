@@ -215,23 +215,16 @@ export default function StatsPage() {
       ) : (
         <>
           {/* 요약 카드 */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '28px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '28px' }}>
             <SummaryCard
               label="전체 평균 성취도"
-              value={`${stats.overall?.overall_avg ?? 0}%`}
+              value={`${Math.round(computedSummary.reduce((sum, s) => sum + s.avg_value, 0) / computedSummary.length * 10) / 10}%`}
               sub={`총 ${stats.overall?.total ?? 0}건 기록`}
             />
             <SummaryCard
               label="완료 횟수"
               value={stats.overall?.success ?? 0}
               sub="value > 0 기준"
-            />
-            <SummaryCard
-              label="완료율"
-              value={stats.overall?.total > 0
-                ? `${Math.round((stats.overall.success / stats.overall.total) * 100)}%`
-                : '—'}
-              sub="전체 기록 대비"
             />
           </div>
 
